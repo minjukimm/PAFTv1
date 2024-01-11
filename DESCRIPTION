@@ -13,4 +13,5 @@ Imports:
   dplyr,
   survival,
   nloptr,
-  nnls
+  nnls,
+  R.utils
