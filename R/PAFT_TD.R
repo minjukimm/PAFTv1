@@ -1,7 +1,11 @@
-library(nloptr)
-library(survival)
-library(dplyr)
-library(nnls) # updated weight
+if(!require("R.utils")){
+  install.packages("R.utils")
+}
+R.utils::use("nloptr")
+R.utils::use("survival")
+R.utils::use("dplyr")
+R.utils::use("nnls")
+
 #------------ Function ------------#
 
 #' Parametric AFT model with time dependent covariates
