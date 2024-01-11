@@ -19,23 +19,45 @@
 #' @examples PAFT_TD(dat=dat1,X=c("Z1","X"),dist="log_normal") # True data: log-normal with b0=1, b1=1, b2=1)
 #' @examples PAFT_TD(dat=dat4,X=c("Z1","X"),dist="log_normal") # True data: log-t(3) with b0=1, b1=1, b2=1
 #'
+
 PAFT_TD <- function(formula,data,dist,initial=F,beta0=NA,scale0=NA,tol=1.0e-5,maxiter=2000,algorithm="NLOPT_LN_COBYLA"){
+  if(!require("R.utils")){
+    install.packages("R.utils")
+  }
+  R.utils::use("nloptr")
+  R.utils::use("survival")
+  R.utils::use("dplyr")
+  R.utils::use("nnls")
   
   ## Basic options
   varnames <- all.vars(formula)
-  covr_names <- varnames[c(4:length(varnames))]
   last_data <- as.data.frame(data%>%dplyr::group_by(data[,1])%>%dplyr::arrange(varnames[2])%>%dplyr::slice(n()))[,c(names(data)[1],varnames[2:length(varnames)])]
-  names(last_data) <- c("ID","Time","delta",covr_names)
+  
+  if(length(varnames)==3){
+    # when no covariates
+    covr_names <- NULL
+    names(last_data) <- c("ID","Time","delta")
+  }else{
+    covr_names <- varnames[c(4:length(varnames))]
+    names(last_data) <- c("ID","Time","delta",covr_names)
+  }
   
   ##  Check the types of covariate(s)
-  if(nrow(last_data)==nrow(unique(data[,c(names(data)[1],covr_names)]))){
+  if(nrow(last_data)==nrow(unique(as.data.frame(data[,c(names(data)[1],covr_names)])))){
     
     # 1. Time-independent covariate(s) type : survreg modeling
-    formula_indep <- stats::as.formula(paste0("Surv(Time,delta)~",paste(covr_names, collapse="+")))
-    model_result <- survival::survreg(formula_indep,data=last_data,dist="lognormal")
-    Betas_results <- round(as.numeric(c(model_result$coefficients,model_result$scale)),4)
-    names(Betas_results) <- c(paste("Beta",c(0:length(covr_names)),sep=""),"Scale")
-    final <- list(EstBetas=model_result$coefficients,Model="Time-independent AFT")
+    
+    if(length(covr_names)==0){ # when no covariate
+      model_result <- survival::survreg(formula=Surv(Time,delta)~1,data=last_data,dist="lognormal")
+      Betas_results <- round(as.numeric(c(model_result$coefficients,model_result$scale)),4)
+      names(Betas_results) <- c("Beta0","Scale")
+    }else{
+      formula_indep <- stats::as.formula(paste0("Surv(Time,delta)~",paste(covr_names, collapse="+")))
+      model_result <- survival::survreg(formula_indep,data=last_data,dist="lognormal")
+      Betas_results <- round(as.numeric(c(model_result$coefficients,model_result$scale)),4)
+      names(Betas_results) <- c(paste("Beta",c(0:length(covr_names)),sep=""),"Scale")
+    }
+    final <- list(EstBetas=Betas_results,Model="Time-independent AFT")
     
   }else{
     
@@ -115,11 +137,24 @@ PAFT_TD <- function(formula,data,dist,initial=F,beta0=NA,scale0=NA,tol=1.0e-5,ma
       status <- res2$status # integer value with the status of the optimization
       message <- res2$message # more informative message with the status of the optimization
       
-      final <- list(EstBetas=Betas_results,itr=itr,status=status,
-                    message=message)
+      final <- list(EstBetas=Betas_results,itr=itr,status=status,message=message)
+      
     }else{
+      
       final <- NULL
+      
     }
   }
   return(final)
 }
+
+
+
+
+
+
+
+
+
+
+
