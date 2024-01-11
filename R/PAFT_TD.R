@@ -19,15 +19,15 @@
 #' @examples PAFT_TD(dat=dat1,X=c("Z1","X"),dist="log_normal") # True data: log-normal with b0=1, b1=1, b2=1)
 #' @examples PAFT_TD(dat=dat4,X=c("Z1","X"),dist="log_normal") # True data: log-t(3) with b0=1, b1=1, b2=1
 #'
-
-PAFT_TD <- function(formula,data,dist,initial=F,beta0=NA,scale0=NA,tol=1.0e-5,maxiter=2000,algorithm="NLOPT_LN_COBYLA"){
-  if(!require("R.utils")){
+if(!require("R.utils")){
     install.packages("R.utils")
   }
   R.utils::use("nloptr")
   R.utils::use("survival")
   R.utils::use("dplyr")
   R.utils::use("nnls")
+
+PAFT_TD <- function(formula,data,dist,initial=F,beta0=NA,scale0=NA,tol=1.0e-5,maxiter=2000,algorithm="NLOPT_LN_COBYLA"){
   
   ## Basic options
   varnames <- all.vars(formula)
