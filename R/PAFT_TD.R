@@ -24,7 +24,7 @@ PAFT_TD <- function(formula,data,dist,initial=F,beta0=NA,scale0=NA,tol=1.0e-5,ma
   ## Basic options
   varnames <- all.vars(formula)
   covr_names <- varnames[c(4:length(varnames))]
-  last_data <- dplyr::as.data.frame(data%>%group_by(data[,1])%>%arrange(varnames[2])%>%slice(n()))[,c(names(data)[1],varnames[2:length(varnames)])]
+  last_data <- as.data.frame(data%>%dplyr::group_by(data[,1])%>%dplyr::arrange(varnames[2])%>%dplyr::slice(n()))[,c(names(data)[1],varnames[2:length(varnames)])]
   names(last_data) <- c("ID","Time","delta",covr_names)
   
   ##  Check the types of covariate(s)
