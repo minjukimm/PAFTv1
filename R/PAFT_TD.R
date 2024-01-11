@@ -20,18 +20,11 @@
 #' @examples PAFT_TD(dat=dat4,X=c("Z1","X"),dist="log_normal") # True data: log-t(3) with b0=1, b1=1, b2=1
 #'
 PAFT_TD <- function(formula,data,dist,initial=F,beta0=NA,scale0=NA,tol=1.0e-5,maxiter=2000,algorithm="NLOPT_LN_COBYLA"){
-  if(!require("R.utils")){
-  install.packages("R.utils")
-}
-R.utils::use("nloptr")
-R.utils::use("survival")
-R.utils::use("dplyr")
-R.utils::use("nnls")
-
+  
   ## Basic options
   varnames <- all.vars(formula)
   covr_names <- varnames[c(4:length(varnames))]
-  last_data <- as.data.frame(data%>%group_by(data[,1])%>%arrange(varnames[2])%>%slice(n()))[,c(names(data)[1],varnames[2:length(varnames)])]
+  last_data <- dplyr::as.data.frame(data%>%group_by(data[,1])%>%arrange(varnames[2])%>%slice(n()))[,c(names(data)[1],varnames[2:length(varnames)])]
   names(last_data) <- c("ID","Time","delta",covr_names)
   
   ##  Check the types of covariate(s)
